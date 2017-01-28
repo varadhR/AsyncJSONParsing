@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+  	<title>Test async JSON parsing</title>  	
+  </head>	  
+
+  <body>
+
+  	<h1>JSON parsing sample</h1>
+  	<h2>Enter the JSON content to be parsed in this text box.</h2>
+
+	<img src="sample.gif"/>
+	<br/>
+
+  	<textarea type="text" rows="20" cols="100" id="inputjson"></textarea>
+
+  	<br/>
+  	<br/>
+  	<br/>
+
+	<button onclick="parseJsonSyncInt()">Do Sync Json Parse</button>
+	<button onclick="parseJsonAsync()">Do Async Json Parse</button>
+
+  	<br/>
+  	<br/>
+
+	<output id="result"></output>
+
+	<script>
+
+		function parseJsonSyncInt() {
+			
+			var jsonString = document.getElementById('inputjson').value;			
+
+			var start = performance.now();
+
+			for (i = 0; i < 10000; i++) {
+				var parsedJson = JSON.parse(jsonString);
+			}
+
+			var end = performance.now();
+			var elapsedTime = Math.round(end - start);
+
+		    document.getElementById('result').innerHTML = '\nSYNC:  Parsed json, size was ' + 
+		    	jsonString.length + ' ; time taken was ' + elapsedTime + ' ms';
+
+		}
+
+		var myWorker;
+
+		function parseJsonAsync() {
+
+			if (myWorker != typeof(Worker)) {
+				myWorker = new Worker("jsonParser.js");
+			}
+
+			var jsonString = document.getElementById('inputjson').value;		
+
+			myWorker.addEventListener('message', function(e) {
+			    document.getElementById('result').innerHTML = '\nASYNC:  Parsed json, size was ' + 
+			    	jsonString.length + ' ; time taken was ' + e.data + ' ms';
+			    myWorker.terminate();
+			    myWorker = null;	
+			}, false);	
+
+			myWorker.postMessage(jsonString);
+		}
+
+	</script>
+
+  </body>
+	
+</html>
